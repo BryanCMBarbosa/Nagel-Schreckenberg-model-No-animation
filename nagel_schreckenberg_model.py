@@ -3,14 +3,6 @@ import os
 from time import sleep
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-rs", "--road_size", type=int, help="Specify how many positions the array representing the road must have.")
-parser.add_argument("-nc", "--num_cars", type=int, help="Specify how many cars the simulation must have.")
-parser.add_argument("-ms", "--max_speed", type=int, help="Specify the maximum number of positions per time step a car can travel.")
-parser.add_argument("-bp", "--brake_prob", type=float, help="Specify the probability a car have to randomly braking.")
-parser.add_argument("-ne", "--num_episodes", type=int, help="Specify the how many iterations will the simulation have.")
-args = parser.parse_args()
-
 class Car():
     def __init__(self, position, emoji):
         self.speed = 0
@@ -39,7 +31,7 @@ class Road():
             self.road[p] = Car(p, np.random.choice(self.car_emojis))
 
     def print_road(self):
-        sleep(0.10)
+        sleep(0.05)
         os.system("clear")
         street = "="
         for car in self.road:
@@ -91,22 +83,31 @@ class Road():
                     self.flux_counter += 1
                 car.position = new_position
                 new_road[car.position] = car
-            self.flux_sum = self.flux_counter
+                self.flux_sum += self.flux_counter
             self.flux_counter = 0   
         self.road = new_road
 
     def calculate_average_flux(self):
-        self.flux = self.flux_sum / self.num_episodes
+        return self.flux_sum / self.num_episodes
     
-    def run(self):
-        self.print_road()
+    def run(self, terminal_printing = True):
+        if terminal_printing:
+            self.print_road()
         for i in range(self.num_episodes):
             self.update_speed_cars()
             self.move_cars()
-            self.print_road()
+            if terminal_printing:
+                self.print_road()
         self.calculate_average_flux()
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-rs", "--road_size", type=int, help="Specify how many positions the array representing the road must have.")
+    parser.add_argument("-nc", "--num_cars", type=int, help="Specify how many cars the simulation must have.")
+    parser.add_argument("-ms", "--max_speed", type=int, help="Specify the maximum number of positions per time step a car can travel.")
+    parser.add_argument("-bp", "--brake_prob", type=float, help="Specify the probability a car have to randomly braking.")
+    parser.add_argument("-ne", "--num_episodes", type=int, help="Specify the how many iterations will the simulation have.")
+    args = parser.parse_args()
     r = Road(args.road_size, args.num_cars, args.max_speed, args.brake_prob, args.num_episodes)
     r.run()
